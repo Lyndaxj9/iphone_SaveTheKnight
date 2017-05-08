@@ -15,6 +15,8 @@ class Player: Entity {
         super.init(imageName: imageName, scale: scale)
         self.position = CGPoint(x: 200, y: 0)
         self.walkingSpeed = 20
+        self.entityLeft = false
+        self.entityRight = false
     }
     
     required init?(coder aDecoder: NSCoder) {

@@ -27,6 +27,8 @@ class StartScene: SKScene {
                 nextScene?.scaleMode = .aspectFill
                 
                 scene?.view?.presentScene(nextScene!, transition: transition)
+            } else {
+                print("please tap button")
             }
         }
 

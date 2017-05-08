@@ -11,6 +11,10 @@ import SpriteKit
 class Entity: SKSpriteNode {
 
     var walkingSpeed = CGFloat(100)
+    var jumpHeight = CGFloat(300)
+    var entityLeft = false
+    var entityRight = false
+    var entityMovement = false
     
     init(imageName: String, scale: CGFloat) {
         let texture = SKTexture(imageNamed: imageName)
@@ -23,7 +27,7 @@ class Entity: SKSpriteNode {
         self.physicsBody = SKPhysicsBody(texture: texture, size: CGSize(width: xSize, height: ySize))
         self.physicsBody?.isDynamic = true
         self.physicsBody?.allowsRotation = false
-        self.physicsBody?.affectedByGravity = true
+        self.physicsBody?.affectedByGravity = false
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -34,21 +38,28 @@ class Entity: SKSpriteNode {
         
         if(abs(self.position.x - xPosition) < walkingSpeed) {
             self.position.x = xPosition
-        } else {
+        } else if(abs(self.position.x - xPosition) >= walkingSpeed) {
             if(self.position.x > xPosition){
                 self.position.x -= walkingSpeed
+                entityLeft = true
+                entityRight = false
+                entityMovement = true
             } else if(self.position.x < xPosition){
                 self.position.x += walkingSpeed
+                entityRight = true
+                entityLeft = false
+                entityMovement = true
             }
+        } else {
+            entityMovement = false
         }
     }
     
     func jump(scene: SKScene) {
-        //let jumpUpAction = SKAction.moveByX(0, y:20 duration:0.2)
-        let jumpUpAction = SKAction.moveBy(x: 0, y: 20, duration: 0.2)
-        let jumpDownAction = SKAction.moveBy(x: 0, y: 20, duration: 0.2)
+        let jumpUpAction = SKAction.moveBy(x: 0, y: jumpHeight, duration: 0.4)
+        let jumpDownAction = SKAction.moveBy(x: 0, y: -jumpHeight, duration: 0.5)
         let jumpSequence = SKAction.sequence([jumpUpAction, jumpDownAction])
         self.run(jumpSequence)
-        print("jump method")
+        //print("jump method")
     }
 }
