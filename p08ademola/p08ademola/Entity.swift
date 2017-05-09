@@ -15,19 +15,24 @@ class Entity: SKSpriteNode {
     var entityLeft = false
     var entityRight = false
     var entityMovement = false
+    var health:Health!
     
     init(imageName: String, scale: CGFloat) {
         let texture = SKTexture(imageNamed: imageName)
         super.init(texture: texture, color: UIColor.green, size: texture.size())
         self.xScale = scale
         self.yScale = scale
+        
         let textureSize = texture.size()
         let xSize = textureSize.width * scale
         let ySize = textureSize.height * scale
         self.physicsBody = SKPhysicsBody(texture: texture, size: CGSize(width: xSize, height: ySize))
         self.physicsBody?.isDynamic = true
         self.physicsBody?.allowsRotation = false
-        self.physicsBody?.affectedByGravity = false
+        self.physicsBody?.affectedByGravity = true
+        self.physicsBody?.velocity = CGVector(dx: 0, dy: 0)
+        
+        health = Health(maxHealth: 100)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -60,6 +65,10 @@ class Entity: SKSpriteNode {
         let jumpDownAction = SKAction.moveBy(x: 0, y: -jumpHeight, duration: 0.5)
         let jumpSequence = SKAction.sequence([jumpUpAction, jumpDownAction])
         self.run(jumpSequence)
+        /*
+        self.run(jumpSequence, completion: {
+            self.physicsBody?.affectedByGravity = true
+        })*/
         //print("jump method")
     }
 }

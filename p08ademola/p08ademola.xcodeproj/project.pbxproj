@@ -23,6 +23,7 @@
 		BDF741081EBD4AF400E9B5D9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BDF741061EBD4AF400E9B5D9 /* Main.storyboard */; };
 		BDF7410A1EBD4AF400E9B5D9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BDF741091EBD4AF400E9B5D9 /* Assets.xcassets */; };
 		BDF7410D1EBD4AF400E9B5D9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BDF7410B1EBD4AF400E9B5D9 /* LaunchScreen.storyboard */; };
+		BDF877191EC18033000D52D8 /* Health.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDF877181EC18033000D52D8 /* Health.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,7 @@
 		BDF741091EBD4AF400E9B5D9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BDF7410C1EBD4AF400E9B5D9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		BDF7410E1EBD4AF400E9B5D9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		BDF877181EC18033000D52D8 /* Health.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Health.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +89,7 @@
 				BDF54D4F1EBEBC4900CF6F3D /* Entity.swift */,
 				BDDDFE5E1EC0F98600EB5B84 /* Enemy.swift */,
 				BDD79FFA1EC00B6F00316E00 /* Player.swift */,
+				BDF877181EC18033000D52D8 /* Health.swift */,
 				BDF741061EBD4AF400E9B5D9 /* Main.storyboard */,
 				BDF741091EBD4AF400E9B5D9 /* Assets.xcassets */,
 				BDF54D431EBEA18B00CF6F3D /* CuteGirl.sks */,
@@ -181,6 +184,7 @@
 				BDDDFE5F1EC0F98600EB5B84 /* Enemy.swift in Sources */,
 				BDD79FFB1EC00B6F00316E00 /* Player.swift in Sources */,
 				BDF54D501EBEBC4900CF6F3D /* Entity.swift in Sources */,
+				BDF877191EC18033000D52D8 /* Health.swift in Sources */,
 				BDF54D401EBE9C5F00CF6F3D /* StartScene.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
