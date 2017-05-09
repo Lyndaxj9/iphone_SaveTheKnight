@@ -24,6 +24,12 @@ class Enemy: Entity {
         idleMove()
     }
     
+    override init() {
+        super.init()
+        self.walkingSpeed = 15
+        idleMove()
+    }
+    
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }

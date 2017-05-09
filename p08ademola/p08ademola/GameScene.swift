@@ -8,43 +8,79 @@
 
 import SpriteKit
 
-class GameScene: SKScene {
+struct PhysicsCategory {
+    static let None     : UInt32 = 0
+    static let All      : UInt32 = UInt32.max
+    static let Player : UInt32 = 0b1 //1
+    static let Enemy  : UInt32 = 0b10 //2
+    static let Platform : UInt32 = 0b11 //3
+}
+
+class GameScene: SKScene, SKPhysicsContactDelegate {
     
+    //map level
     var groundMap:SKTileMapNode!
-    var player:Player!
-    var enemy:Enemy!
-    
     let groundNode = SKNode()
     let groundWidth = CGFloat(1334)
     let groundHeight = CGFloat(128)
+    var halfSceneSize:CGFloat = 0.0
     var cam:SKCameraNode!
+    
+    //player
+    var player:Player!
     var newPlayerPos = CGFloat(0)
-    var maxMapPos = CGFloat(-1000)
-    var playerJump = false
+    
+    //enemy
+    var enemy:Enemy!
+    var enemiesArr = [Enemy]()
     
     override func didMove(to view: SKView) {
         print("GameScene()")
+        physicsBody = SKPhysicsBody(edgeLoopFrom: frame)
+        physicsWorld.contactDelegate = self
+        halfSceneSize = (scene?.frame.size.height)!/2
         cam = childNode(withName: "cam") as! SKCameraNode!
-        //cam.setScale(0.9)
         self.camera = cam
         //addChild(cam)
         //cam.position = CGPoint(x: self.frame.midX , y: self.frame.midY)
         
         setupNodes()
         setupPlayer()
+        setupEnemy()
     }
     
     func setupPlayer() {
-        let halfSceneSize = (scene?.frame.size.height)!/2
         player = Player(imageName: "Idle (1)", scale: 0.20)
         let PdistanceFromBottom = groundHeight + player.size.height/2
         player.position.y = CGFloat(-(halfSceneSize - PdistanceFromBottom))
-        addChild(player)
         
-        enemy = Enemy(imageName: "Tree_2", scale: 0.25)
-        let EdistanceFromBottom = groundHeight + enemy.size.height/2
-        enemy.position.y = CGFloat(-(halfSceneSize - EdistanceFromBottom))
-        addChild(enemy)
+        player.physicsBody?.categoryBitMask = PhysicsCategory.Player
+        player.physicsBody?.contactTestBitMask = PhysicsCategory.Enemy
+        player.physicsBody?.usesPreciseCollisionDetection = true
+        
+        addChild(player)
+    }
+    
+    func setupEnemy() {
+        for i in 0..<5 {
+            print("in loop")
+            let anEnemy:Enemy = Enemy(imageName: "Idle__000", scale: 0.25)
+            
+            let EdistanceFromBottom = groundHeight + anEnemy.size.height/2
+            anEnemy.position.y = CGFloat(-(halfSceneSize - EdistanceFromBottom))
+            let randomX = CGFloat(arc4random_uniform(UInt32(groundMap.mapSize.width))) - groundWidth/2
+            anEnemy.position.x = CGFloat(randomX)
+            
+            anEnemy.name = String(format: "enemy0%d", i)
+            
+            anEnemy.physicsBody?.categoryBitMask = PhysicsCategory.Enemy
+            anEnemy.physicsBody?.contactTestBitMask = PhysicsCategory.Player
+            anEnemy.physicsBody?.usesPreciseCollisionDetection = true
+            
+            addChild(anEnemy)
+            enemiesArr.append(anEnemy)
+        }
+ 
     }
     
     func setupNodes() {
@@ -54,7 +90,7 @@ class GameScene: SKScene {
         self.groundMap = groundMap
         
         groundNode.position = CGPoint(x: -669, y: -310)
-        groundNode.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: groundMap.mapSize.width, height: groundHeight) , center: CGPoint(x:1334/2, y:0))
+        groundNode.physicsBody = SKPhysicsBody(rectangleOf: CGSize(width: groundMap.mapSize.width/2, height: groundHeight) , center: CGPoint(x:groundMap.mapSize.width/4, y:0))
         groundNode.physicsBody?.affectedByGravity = false
         groundNode.physicsBody?.allowsRotation = false
         groundNode.physicsBody?.isDynamic = false
@@ -73,13 +109,37 @@ class GameScene: SKScene {
         } else if(touch.tapCount == 1) {
             //print("%f", currentPoint.x)
             newPlayerPos = currentPoint.x
-            let moveCamera = SKAction.moveTo(x: newPlayerPos/2, duration: 0.9)
-            cam.run(moveCamera, withKey: "cameraMove")
+            //let moveCamera = SKAction.moveTo(x: newPlayerPos/2, duration: 0.9)
+            //cam.run(moveCamera, withKey: "cameraMove")
         }
+    }
+    
+    func moveCam() {
+        if(cam.position.x < player.position.x) {
+            if(player.position.x - 15 < cam.position.x)
+            {
+                cam.position.x = player.position.x
+            } else {
+                cam.position.x += 15
+            }
+        } else if(cam.position.x > player.position.x) {
+            if(player.position.x + 15 > cam.position.x){
+                cam.position.x = player.position.x
+            } else {
+                cam.position.x -= 15
+            }
+        }
+    }
+    
+    func didBegin(_ contact: SKPhysicsContact) {
+        print("contact!")
     }
     
     override func update(_ currentTime: TimeInterval) {
         player.moveX(scene: self, xPosition: newPlayerPos)
-        enemy.followPlayer(scene: self, playerPos: player.position)
+        moveCam()
+        for e in enemiesArr {
+            e.followPlayer(scene: self, playerPos: player.position)
+        }
     }
 }

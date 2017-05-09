@@ -35,6 +35,11 @@ class Entity: SKSpriteNode {
         health = Health(maxHealth: 100)
     }
     
+    init() {
+        let texture = SKTexture(imageNamed: "sign_1")
+        super.init(texture: texture, color: UIColor.green, size: texture.size())
+    }
+    
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
