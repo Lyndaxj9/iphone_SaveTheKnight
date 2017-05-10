@@ -27,7 +27,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let groundHeight = CGFloat(128)
     var halfSceneSize:CGFloat = 0.0
     var cam:SKCameraNode!
+    
+    //gui
+    var scoreLabel:SKLabelNode!
     var score = 0
+    var healthContainer:SKSpriteNode!
+    var healthBar:SKSpriteNode!
+    let healthCropNode = SKCropNode()
     
     //player
     var player:Player!
@@ -99,14 +105,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         groundNode.physicsBody?.allowsRotation = false
         groundNode.physicsBody?.isDynamic = false
         addChild(groundNode)
-        
-        
-        guard let objectTileMap = childNode(withName: "ObjectMap") as? SKTileMapNode else {
-            fatalError("Objects node not loaded")
-        }
-        self.objectTileMap = objectTileMap
  
-        //tileMapPhysics(name: self.platformMap, dataString: "platform", categoryMask: PhysicsCategory.Platform)
+        scoreLabel = cam.childNode(withName: "scoreLabel") as? SKLabelNode
+        scoreLabel.text = "0"
+        
+        healthContainer = cam.childNode(withName: "healthContainer") as? SKSpriteNode
+        healthBar = healthContainer.childNode(withName: "healthBar") as? SKSpriteNode
+
     }
     
     func tileMapPhysics(name: SKTileMapNode, dataString: NSString, categoryMask: UInt32) {
@@ -178,18 +183,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func moveCam() {
-        if(cam.position.x < player.position.x) {
-            if(player.position.x - 15 < cam.position.x)
-            {
-                cam.position.x = player.position.x
-            } else {
-                cam.position.x += 15
-            }
-        } else if(cam.position.x > player.position.x) {
-            if(player.position.x + 15 > cam.position.x){
-                cam.position.x = player.position.x
-            } else {
-                cam.position.x -= 15
+        if(player.position.x > 0){
+            if(cam.position.x < player.position.x) {
+                if(player.position.x - 15 < cam.position.x)
+                {
+                    cam.position.x = player.position.x
+                } else {
+                    cam.position.x += 15
+                }
+            } else if(cam.position.x > player.position.x) {
+                if(player.position.x + 15 > cam.position.x){
+                    cam.position.x = player.position.x
+                } else {
+                    cam.position.x -= 15
+                }
             }
         }
     }
@@ -223,17 +230,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 if(contact.bodyA.node?.name == "player") {
                     crate = contact.bodyB.node
                     if(contact.bodyB.node == nil){
-                        //score += 10
                     }
                 } else {
                     crate = contact.bodyA.node
                     if(contact.bodyA.node == nil){
-                        //score += 10
                     }
                 }
                 
                 if(crate != nil){
                     score += 10
+                    scoreLabel.text = String(format: "%d", score)
                 }
                 crate?.removeFromParent()
                 print(score)
@@ -251,21 +257,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         moveCam()
         for e in enemiesArr {
             e.followPlayer(scene: self, playerPos: player.position)
-        }
-        
-        //check if over crate
-        let position = player.position
-        
-        let column = objectTileMap.tileColumnIndex(fromPosition: position)
-        let row = objectTileMap.tileRowIndex(fromPosition: position)
-        
-        let objectTile = objectTileMap.tileDefinition(atColumn: column, row: row)
-        
-        if let _ = objectTile?.userData?.value(forKey: "crate") {
-            objectTileMap.setTileGroup(nil, forColumn: column, row: row)
-            score += 10
-            print("score is: %d", score)
-            //scoreLabel.text = String(format: "Score: %d", score)
         }
     }
 }
