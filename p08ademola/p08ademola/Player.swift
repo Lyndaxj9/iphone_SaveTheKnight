@@ -13,7 +13,7 @@ class Player: Entity {
 
     override init(imageName: String, scale: CGFloat) {
         super.init(imageName: imageName, scale: scale)
-        self.position = CGPoint(x: 200, y: 0)
+        self.position = CGPoint(x: 0, y: 0)
         self.walkingSpeed = 20
         self.entityLeft = false
         self.entityRight = false

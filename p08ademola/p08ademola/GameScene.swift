@@ -20,6 +20,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     //map level
     var groundMap:SKTileMapNode!
+    var platformMap:SKTileMapNode!
     let groundNode = SKNode()
     let groundWidth = CGFloat(1334)
     let groundHeight = CGFloat(128)
@@ -53,6 +54,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player = Player(imageName: "Idle (1)", scale: 0.20)
         let PdistanceFromBottom = groundHeight + player.size.height/2
         player.position.y = CGFloat(-(halfSceneSize - PdistanceFromBottom))
+        player.name = "player"
         
         player.physicsBody?.categoryBitMask = PhysicsCategory.Player
         player.physicsBody?.contactTestBitMask = PhysicsCategory.Enemy
@@ -62,16 +64,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func setupEnemy() {
-        for i in 0..<5 {
-            print("in loop")
+        for _ in 0..<5 {
             let anEnemy:Enemy = Enemy(imageName: "Idle__000", scale: 0.25)
             
             let EdistanceFromBottom = groundHeight + anEnemy.size.height/2
             anEnemy.position.y = CGFloat(-(halfSceneSize - EdistanceFromBottom))
-            let randomX = CGFloat(arc4random_uniform(UInt32(groundMap.mapSize.width))) - groundWidth/2
+            let randomX = CGFloat(arc4random_uniform(UInt32(groundMap.mapSize.width/2))) - groundWidth/2
             anEnemy.position.x = CGFloat(randomX)
             
-            anEnemy.name = String(format: "enemy0%d", i)
+            //anEnemy.name = String(format: "enemy0%d", i)
+            anEnemy.name = "enemy"
             
             anEnemy.physicsBody?.categoryBitMask = PhysicsCategory.Enemy
             anEnemy.physicsBody?.contactTestBitMask = PhysicsCategory.Player
@@ -96,7 +98,61 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         groundNode.physicsBody?.isDynamic = false
         addChild(groundNode)
         
+        guard let platformMap = childNode(withName: "PlatformMap") as? SKTileMapNode else {
+            fatalError("Platform node not loaded")
+        }
+        self.platformMap = platformMap
+        
+        tileMapPhysics(name: self.platformMap, dataString: "platform", categoryMask: PhysicsCategory.Platform)
     }
+    
+    func tileMapPhysics(name: SKTileMapNode, dataString: NSString, categoryMask: UInt32) {
+        let tileMap = name
+        
+        let tileSize = tileMap.tileSize
+        let halfWidth = CGFloat(tileMap.numberOfColumns)/2.0 * tileSize.width //this confuses me
+        let halfHeight = CGFloat(tileMap.numberOfRows)/2.0 * tileSize.height
+        //print("tilesize width: %f", tileSize.width)
+        
+        for col in 0..<tileMap.numberOfColumns {
+            for row in 0..<tileMap.numberOfRows {
+                if let tileDefinition = tileMap.tileDefinition(atColumn: col, row: row) {
+                    let isHitTile = tileDefinition.userData?[dataString] as? Int
+                    if(isHitTile != 0) {
+                        //print("tilehitget")
+                        let tileArray = tileDefinition.textures
+                        let tileTexture = tileArray[0]
+                        
+                        let x = CGFloat(col)*tileSize.width - halfWidth + (tileSize.width/2)
+                        let y = CGFloat(row)*tileSize.height - halfHeight + (tileSize.height/2)
+                        
+                        let tileNode = SKNode()
+                        
+                        tileNode.position = CGPoint(x:x, y:y)
+                        tileNode.physicsBody = SKPhysicsBody(texture: tileTexture, size:CGSize(width: (tileTexture.size().width), height: (tileTexture.size().height))) //why *2
+                        tileNode.physicsBody?.linearDamping = 60.0
+                        tileNode.physicsBody?.affectedByGravity = false
+                        tileNode.physicsBody?.allowsRotation = false
+                        tileNode.physicsBody?.restitution = 0.0
+                        tileNode.physicsBody?.isDynamic = false
+                        
+                        /*
+                        tileNode.physicsBody?.categoryBitMask = categoryMask
+                        tileNode.physicsBody?.contactTestBitMask = PhysicsCategory.PlayerRobot | PhysicsCategory.EnemyRobot
+                        tileNode.physicsBody?.collisionBitMask = collisionMask
+ */
+                        tileNode.name = "platform"
+                        tileNode.yScale = tileMap.yScale
+                        tileNode.xScale = tileMap.xScale
+                        
+                        tileMap.addChild(tileNode)
+                        //addChild(tileNode)
+                    }
+                }
+            }
+        }
+    }
+
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else { return }
@@ -132,7 +188,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
-        print("contact!")
+        let contactMask = contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask
+        
+        switch(contactMask) {
+            case PhysicsCategory.Player | PhysicsCategory.Enemy:
+                if(contact.bodyA.node?.name == "player"){
+                    let playerY = contact.bodyA.node?.position.y
+                    let enemyY = contact.bodyB.node?.position.y
+                    if(CGFloat(playerY!) > CGFloat(enemyY!)) {
+                        print("player hit enemy A")
+                    }
+                } else if(contact.bodyB.node?.name == "player"){
+                    let playerY = contact.bodyB.node?.position.y
+                    let enemyY = contact.bodyA.node?.position.y
+                    if(CGFloat(playerY!) > CGFloat(enemyY!)) {
+                        print("player hit enemy B")
+                    }
+                }
+                break
+            
+            default:
+                break
+        }
+        
     }
     
     override func update(_ currentTime: TimeInterval) {

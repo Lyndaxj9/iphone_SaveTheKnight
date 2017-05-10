@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		BDD0B54C1EC27D46003CC242 /* Decor Tiles.sks in Resources */ = {isa = PBXBuildFile; fileRef = BDD0B54B1EC27D46003CC242 /* Decor Tiles.sks */; };
+		BDD0B54E1EC28F6F003CC242 /* Platform Tiles.sks in Resources */ = {isa = PBXBuildFile; fileRef = BDD0B54D1EC28F6F003CC242 /* Platform Tiles.sks */; };
 		BDD79FFB1EC00B6F00316E00 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDD79FFA1EC00B6F00316E00 /* Player.swift */; };
 		BDDDFE5F1EC0F98600EB5B84 /* Enemy.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDDDFE5E1EC0F98600EB5B84 /* Enemy.swift */; };
 		BDF54D401EBE9C5F00CF6F3D /* StartScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDF54D3F1EBE9C5F00CF6F3D /* StartScene.swift */; };
@@ -29,6 +30,7 @@
 
 /* Begin PBXFileReference section */
 		BDD0B54B1EC27D46003CC242 /* Decor Tiles.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = "Decor Tiles.sks"; sourceTree = "<group>"; };
+		BDD0B54D1EC28F6F003CC242 /* Platform Tiles.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; path = "Platform Tiles.sks"; sourceTree = "<group>"; };
 		BDD79FFA1EC00B6F00316E00 /* Player.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		BDDDFE5E1EC0F98600EB5B84 /* Enemy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Enemy.swift; sourceTree = "<group>"; };
 		BDF54D3F1EBE9C5F00CF6F3D /* StartScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StartScene.swift; sourceTree = "<group>"; };
@@ -96,6 +98,7 @@
 				BDF741091EBD4AF400E9B5D9 /* Assets.xcassets */,
 				BDF54D431EBEA18B00CF6F3D /* CuteGirl.sks */,
 				BDF54D4D1EBEAD3100CF6F3D /* Ground Tiles.sks */,
+				BDD0B54D1EC28F6F003CC242 /* Platform Tiles.sks */,
 				BDD0B54B1EC27D46003CC242 /* Decor Tiles.sks */,
 				BDF7410B1EBD4AF400E9B5D9 /* LaunchScreen.storyboard */,
 				BDF7410E1EBD4AF400E9B5D9 /* Info.plist */,
@@ -169,6 +172,7 @@
 				BDF54D4C1EBEA92100CF6F3D /* GameScene.sks in Resources */,
 				BDF54D441EBEA18B00CF6F3D /* CuteGirl.sks in Resources */,
 				BDF7410D1EBD4AF400E9B5D9 /* LaunchScreen.storyboard in Resources */,
+				BDD0B54E1EC28F6F003CC242 /* Platform Tiles.sks in Resources */,
 				BDD0B54C1EC27D46003CC242 /* Decor Tiles.sks in Resources */,
 				BDF54D4E1EBEAD3100CF6F3D /* Ground Tiles.sks in Resources */,
 			);
