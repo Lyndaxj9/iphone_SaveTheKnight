@@ -14,18 +14,20 @@ struct PhysicsCategory {
     static let Player : UInt32 = 0b1 //1
     static let Enemy  : UInt32 = 0b10 //2
     static let Platform : UInt32 = 0b11 //3
+    static let PointObject: UInt32 = 0b100 //4
 }
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
     //map level
     var groundMap:SKTileMapNode!
-    var platformMap:SKTileMapNode!
+    var objectTileMap:SKTileMapNode!
     let groundNode = SKNode()
     let groundWidth = CGFloat(1334)
     let groundHeight = CGFloat(128)
     var halfSceneSize:CGFloat = 0.0
     var cam:SKCameraNode!
+    var score = 0
     
     //player
     var player:Player!
@@ -57,7 +59,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.name = "player"
         
         player.physicsBody?.categoryBitMask = PhysicsCategory.Player
-        player.physicsBody?.contactTestBitMask = PhysicsCategory.Enemy
+        player.physicsBody?.contactTestBitMask = PhysicsCategory.Enemy | PhysicsCategory.PointObject
         player.physicsBody?.usesPreciseCollisionDetection = true
         
         addChild(player)
@@ -98,11 +100,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         groundNode.physicsBody?.isDynamic = false
         addChild(groundNode)
         
-        guard let platformMap = childNode(withName: "PlatformMap") as? SKTileMapNode else {
-            fatalError("Platform node not loaded")
-        }
-        self.platformMap = platformMap
         
+        guard let objectTileMap = childNode(withName: "ObjectMap") as? SKTileMapNode else {
+            fatalError("Objects node not loaded")
+        }
+        self.objectTileMap = objectTileMap
+ 
         //tileMapPhysics(name: self.platformMap, dataString: "platform", categoryMask: PhysicsCategory.Platform)
     }
     
@@ -201,6 +204,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     let enemyY = contact.bodyB.node?.position.y
                     if(CGFloat(playerY!) > CGFloat(enemyY!)) {
                         print("player hit enemy A")
+                        contact.bodyB.node?.removeFromParent()
                     }
                 } else if(contact.bodyB.node?.name == "player"){
                     let playerY = contact.bodyB.node?.position.y
@@ -210,6 +214,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     }
                 }
                 break
+            
+            
+            case PhysicsCategory.Player | PhysicsCategory.PointObject:
+                print("got point")
+                var crate:SKNode? = nil
+                
+                if(contact.bodyA.node?.name == "player") {
+                    crate = contact.bodyB.node
+                    if(contact.bodyB.node == nil){
+                        //score += 10
+                    }
+                } else {
+                    crate = contact.bodyA.node
+                    if(contact.bodyA.node == nil){
+                        //score += 10
+                    }
+                }
+                
+                if(crate != nil){
+                    score += 10
+                }
+                crate?.removeFromParent()
+                print(score)
+                break
+ 
             
             default:
                 break
@@ -222,6 +251,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         moveCam()
         for e in enemiesArr {
             e.followPlayer(scene: self, playerPos: player.position)
+        }
+        
+        //check if over crate
+        let position = player.position
+        
+        let column = objectTileMap.tileColumnIndex(fromPosition: position)
+        let row = objectTileMap.tileRowIndex(fromPosition: position)
+        
+        let objectTile = objectTileMap.tileDefinition(atColumn: column, row: row)
+        
+        if let _ = objectTile?.userData?.value(forKey: "crate") {
+            objectTileMap.setTileGroup(nil, forColumn: column, row: row)
+            score += 10
+            print("score is: %d", score)
+            //scoreLabel.text = String(format: "Score: %d", score)
         }
     }
 }
