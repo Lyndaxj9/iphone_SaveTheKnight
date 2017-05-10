@@ -103,16 +103,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
         self.platformMap = platformMap
         
-        tileMapPhysics(name: self.platformMap, dataString: "platform", categoryMask: PhysicsCategory.Platform)
+        //tileMapPhysics(name: self.platformMap, dataString: "platform", categoryMask: PhysicsCategory.Platform)
     }
     
     func tileMapPhysics(name: SKTileMapNode, dataString: NSString, categoryMask: UInt32) {
         let tileMap = name
+        //tileMap.anchorPoint = CGPoint(x: 0, y: 0.5)
+        let tap = tileMap.anchorPoint
+        print(tap.x, tap.y)
         
         let tileSize = tileMap.tileSize
         let halfWidth = CGFloat(tileMap.numberOfColumns)/2.0 * tileSize.width //this confuses me
         let halfHeight = CGFloat(tileMap.numberOfRows)/2.0 * tileSize.height
-        //print("tilesize width: %f", tileSize.width)
+        print("tilesize width: %f | tilesize height: %f", tileSize.width, tileSize.height)
+        print("halfWidth: %f | halfHeight: %f", halfWidth, halfHeight)
         
         for col in 0..<tileMap.numberOfColumns {
             for row in 0..<tileMap.numberOfRows {
@@ -160,7 +164,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         if(touch.tapCount == 2) {
             //print("jump")
-            player.physicsBody?.applyImpulse(CGVector(dx: 0.0, dy: 120.0))
+            player.physicsBody?.applyImpulse(CGVector(dx: 0.0, dy: 150.0))
             //player.jump(scene: self)
         } else if(touch.tapCount == 1) {
             //print("%f", currentPoint.x)
