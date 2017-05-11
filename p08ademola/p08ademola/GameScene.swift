@@ -13,10 +13,12 @@ struct PhysicsCategory {
     static let All      : UInt32 = UInt32.max
     static let Player : UInt32 = 0b1 //1
     static let Enemy  : UInt32 = 0b10 //2
-    static let Platform : UInt32 = 0b11 //3
+    //static let Prince : UInt32 = 0b11 //3
     static let PointObject: UInt32 = 0b100 //4
     static let PlayerBullet: UInt32 = 0b101 //5
     static let EnemyBullet: UInt32 = 0b110 //6
+    //static let Prince:  UInt32 = 0b111 //7
+    static let Prince: UInt32 = 0b1000 //8
 }
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
@@ -29,6 +31,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let groundHeight = CGFloat(128)
     var halfSceneSize:CGFloat = 0.0
     var cam:SKCameraNode!
+    var gameOver = false
     
     //gui
     var scoreLabel:SKLabelNode!
@@ -37,11 +40,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var healthBar:SKSpriteNode!
     let healthCropNode = SKCropNode()
     var mask:SKSpriteNode!
+    var youLose:SKLabelNode!
+    var youWin:SKLabelNode!
     
     //player
     var player:Player!
     var newPlayerPos = CGFloat(0)
     var playerHealth:Health!
+    
+    var prince:Player!
     
     //enemy
     var enemy:Enemy!
@@ -60,6 +67,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupNodes()
         setupPlayer()
         setupEnemy()
+        setupPrince()
     }
     
     func setupPlayer() {
@@ -71,10 +79,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         playerHealth = player.health
         
         player.physicsBody?.categoryBitMask = PhysicsCategory.Player
-        player.physicsBody?.contactTestBitMask = PhysicsCategory.Enemy | PhysicsCategory.PointObject
+        player.physicsBody?.contactTestBitMask = PhysicsCategory.Enemy | PhysicsCategory.PointObject | PhysicsCategory.Prince
         player.physicsBody?.usesPreciseCollisionDetection = true
         
         addChild(player)
+    }
+    
+    func setupPrince() {
+        prince = Player(imageName: "Idle02", scale: 0.20)
+        prince.position = CGPoint(x: 2500, y: 200)
+        prince.name = "prince"
+        prince.xScale *= -1
+        
+        prince.physicsBody?.categoryBitMask = PhysicsCategory.Prince
+        prince.physicsBody?.contactTestBitMask = PhysicsCategory.Player
+        prince.physicsBody?.usesPreciseCollisionDetection = true
+        
+        addChild(prince)
     }
     
     func setupEnemy() {
@@ -117,6 +138,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
  
         scoreLabel = cam.childNode(withName: "scoreLabel") as? SKLabelNode
         scoreLabel.text = "0"
+        
+        youWin = cam.childNode(withName: "youWin") as? SKLabelNode
+        youLose = cam.childNode(withName: "youLose") as? SKLabelNode
         
         healthContainer = cam.childNode(withName: "healthContainer") as? SKSpriteNode
         healthBar = healthContainer.childNode(withName: "healthBar") as? SKSpriteNode
@@ -226,8 +250,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    func checkHit() {
+    func restartGame() {
+        for aE in enemiesArr {
+            if(intersects(aE)) {
+                aE.removeFromParent()
+            }
+        }
         
+        player.removeFromParent()
+        prince.removeFromParent()
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
@@ -240,6 +271,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     let enemyY = contact.bodyB.node?.position.y
                     if(CGFloat(playerY!) > CGFloat(enemyY!)) {
                         print("player hit enemy A")
+                        playerHealth.damageHealth(damage: -7.0)
+                        let barDisplay = playerHealth.current/playerHealth.maxhealth
+                        healthBar.xScale = barDisplay
                         contact.bodyB.node?.removeFromParent()
                     } 
                 } else if(contact.bodyB.node?.name == "player"){
@@ -269,28 +303,33 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 if(crate != nil){
                     score += 10
                     scoreLabel.text = String(format: "%d", score)
+                    playerHealth.damageHealth(damage: -3.0)
+                    let barDisplay = playerHealth.current/playerHealth.maxhealth
+                    healthBar.xScale = barDisplay
                 }
                 crate?.removeFromParent()
                 //print(score)
                 break
  
-        case PhysicsCategory.Player | PhysicsCategory.EnemyBullet:
-            if(contact.bodyA.node?.name == "player") {
-                if(contact.bodyA.node?.intersects(contact.bodyB.node!))! {
-                    contact.bodyB.node?.physicsBody?.categoryBitMask = PhysicsCategory.None
-                    print("bullet hit player")
-                    playerHealth.damageHealth(damage: 5.0)
-                    let barDisplay = playerHealth.current/playerHealth.maxhealth
-                    healthBar.xScale = barDisplay
+            case PhysicsCategory.Player | PhysicsCategory.EnemyBullet:
+                if(contact.bodyA.node?.name == "player") {
+                    if(contact.bodyA.node?.intersects(contact.bodyB.node!))! {
+                        contact.bodyB.node?.physicsBody?.categoryBitMask = PhysicsCategory.None
+                        print("bullet hit player")
+                        playerHealth.damageHealth(damage: 5.0)
+                        let barDisplay = playerHealth.current/playerHealth.maxhealth
+                        healthBar.xScale = barDisplay
+                    }
                 }
-            }
-            /*
-            print("bullet hit player")
-            playerHealth.damageHealth(damage: 5.0)
-            let barDisplay = playerHealth.current/playerHealth.maxhealth
-            healthBar.xScale = barDisplay
- */
-            break
+                break
+                
+            case PhysicsCategory.Player | PhysicsCategory.Prince:
+                print("You Win")
+                gameOver = true
+                if(gameOver){
+                    youWin.isHidden = false
+                }
+                break
             
             default:
                 break
@@ -299,10 +338,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     override func update(_ currentTime: TimeInterval) {
-        player.moveX(scene: self, xPosition: newPlayerPos)
-        moveCam()
-        for e in enemiesArr {
-            e.followPlayer(scene: self, playerPos: player.position)
+        if(!gameOver){
+            player.moveX(scene: self, xPosition: newPlayerPos)
+            moveCam()
+            for e in enemiesArr {
+                e.followPlayer(scene: self, playerPos: player.position)
+            }
+            if(playerHealth.current <= 0){
+                gameOver = true
+                youLose.isHidden = false
+            }
         }
+        
     }
 }
