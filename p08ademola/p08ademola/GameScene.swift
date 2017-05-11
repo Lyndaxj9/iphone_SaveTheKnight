@@ -15,6 +15,8 @@ struct PhysicsCategory {
     static let Enemy  : UInt32 = 0b10 //2
     static let Platform : UInt32 = 0b11 //3
     static let PointObject: UInt32 = 0b100 //4
+    static let PlayerBullet: UInt32 = 0b101 //5
+    static let EnemyBullet: UInt32 = 0b110 //6
 }
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
@@ -34,10 +36,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var healthContainer:SKSpriteNode!
     var healthBar:SKSpriteNode!
     let healthCropNode = SKCropNode()
+    var mask:SKSpriteNode!
     
     //player
     var player:Player!
     var newPlayerPos = CGFloat(0)
+    var playerHealth:Health!
     
     //enemy
     var enemy:Enemy!
@@ -64,6 +68,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         player.position.y = CGFloat(-(halfSceneSize - PdistanceFromBottom))
         player.name = "player"
         
+        playerHealth = player.health
+        
         player.physicsBody?.categoryBitMask = PhysicsCategory.Player
         player.physicsBody?.contactTestBitMask = PhysicsCategory.Enemy | PhysicsCategory.PointObject
         player.physicsBody?.usesPreciseCollisionDetection = true
@@ -73,7 +79,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     func setupEnemy() {
         for _ in 0..<5 {
-            let anEnemy:Enemy = Enemy(imageName: "Idle__000", scale: 0.25)
+            let anEnemy:Enemy = Enemy(imageName: "Walk (3)", scale: 0.25)
             
             let EdistanceFromBottom = groundHeight + anEnemy.size.height/2
             anEnemy.position.y = CGFloat(-(halfSceneSize - EdistanceFromBottom))
@@ -82,6 +88,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             //anEnemy.name = String(format: "enemy0%d", i)
             anEnemy.name = "enemy"
+            
+            anEnemy.bullet.physicsBody?.categoryBitMask = PhysicsCategory.EnemyBullet
+            anEnemy.bullet.physicsBody?.contactTestBitMask = PhysicsCategory.Player
             
             anEnemy.physicsBody?.categoryBitMask = PhysicsCategory.Enemy
             anEnemy.physicsBody?.contactTestBitMask = PhysicsCategory.Player
@@ -111,6 +120,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         healthContainer = cam.childNode(withName: "healthContainer") as? SKSpriteNode
         healthBar = healthContainer.childNode(withName: "healthBar") as? SKSpriteNode
+        //let mask = SKSpriteNode(color: UIColor.black, size: CGSize(width: healthBar.frame.size.width, height: healthBar.frame.size.height))
+        let maskSize = healthBar.texture!.size()
+        //print("maskSize w:", maskSize.width, "maskSize h:", maskSize.height)
+        let mask = SKSpriteNode(texture: healthBar.texture, size: CGSize(width: maskSize.width, height: maskSize.height))
+        mask.setScale(1.25)
+        //mask.position = CGPoint(x:0, y: 0)
+        healthBar.removeFromParent()
+        healthCropNode.maskNode = mask
+        healthCropNode.addChild(healthBar)
+        healthBar.anchorPoint = CGPoint(x: 0, y: 0.5)
+        healthBar.position.x = healthBar.position.x - healthBar.size.width/2
+        healthContainer.addChild(healthCropNode)
+        healthCropNode.zPosition = 5
+        healthBar.zPosition = 5
+        
+        
 
     }
     
@@ -201,6 +226,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
+    func checkHit() {
+        
+    }
+    
     func didBegin(_ contact: SKPhysicsContact) {
         let contactMask = contact.bodyA.categoryBitMask | contact.bodyB.categoryBitMask
         
@@ -212,7 +241,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     if(CGFloat(playerY!) > CGFloat(enemyY!)) {
                         print("player hit enemy A")
                         contact.bodyB.node?.removeFromParent()
-                    }
+                    } 
                 } else if(contact.bodyB.node?.name == "player"){
                     let playerY = contact.bodyB.node?.position.y
                     let enemyY = contact.bodyA.node?.position.y
@@ -224,7 +253,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             
             case PhysicsCategory.Player | PhysicsCategory.PointObject:
-                print("got point")
+                //print("got point")
                 var crate:SKNode? = nil
                 
                 if(contact.bodyA.node?.name == "player") {
@@ -242,9 +271,26 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                     scoreLabel.text = String(format: "%d", score)
                 }
                 crate?.removeFromParent()
-                print(score)
+                //print(score)
                 break
  
+        case PhysicsCategory.Player | PhysicsCategory.EnemyBullet:
+            if(contact.bodyA.node?.name == "player") {
+                if(contact.bodyA.node?.intersects(contact.bodyB.node!))! {
+                    contact.bodyB.node?.physicsBody?.categoryBitMask = PhysicsCategory.None
+                    print("bullet hit player")
+                    playerHealth.damageHealth(damage: 5.0)
+                    let barDisplay = playerHealth.current/playerHealth.maxhealth
+                    healthBar.xScale = barDisplay
+                }
+            }
+            /*
+            print("bullet hit player")
+            playerHealth.damageHealth(damage: 5.0)
+            let barDisplay = playerHealth.current/playerHealth.maxhealth
+            healthBar.xScale = barDisplay
+ */
+            break
             
             default:
                 break

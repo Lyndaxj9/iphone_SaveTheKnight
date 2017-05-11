@@ -11,16 +11,18 @@ import SpriteKit
 
 class Enemy: Entity {
 
-    private let agroDistance = CGFloat(250)
-    private let attackDistance = CGFloat(70)
+    private let agroDistance = CGFloat(375)
+    private let attackDistance = CGFloat(250)
     private var idling = true
     private var attacking = false
     private let idleSpeed = CGFloat(130)
+    private var canFire = true
+    var bullet = Bullet(bulletImage: "Bone (3)")
     
     override init(imageName: String, scale: CGFloat) {
         super.init(imageName: imageName, scale: scale)
         self.position = CGPoint(x: -100, y: 0)
-        self.walkingSpeed = 15
+        self.walkingSpeed = 10
         idleMove()
     }
     
@@ -46,19 +48,45 @@ class Enemy: Entity {
         moveX(scene: scene, xPosition: playerPos.x)
     }
     
-    func attack() {
-        /*
-        let attackAni = SKAction.moveBy(x: 0, y: 20, duration: 0.45)
-        let attackAniDown = SKAction.moveBy(x: 0, y: -20, duration: 0.4)
-        let attackSeq = SKAction.sequence([attackAni, attackAniDown])
-        self.run(SKAction.repeatForever(attackSeq), withKey: "attacking")
-        */
-        
-        let customAction = SKAction.run({
-            self.physicsBody?.applyImpulse(CGVector(dx: 0.0, dy: 10.0))
-        })
-        let attackSeq = SKAction.sequence([customAction, SKAction.wait(forDuration: 0.2)])
-        self.run(SKAction.repeatForever(attackSeq), withKey: "attacking")
+    func fireBullet(scene: SKScene, location: CGPoint) {
+        if(!canFire){
+            return
+        } else {
+            canFire = false
+            
+            bullet = Bullet(bulletImage: "Bone (3)")
+            bullet.setScale(0.4)
+            
+            bullet.position.x = self.position.x + self.size.width/2
+            bullet.position.y = self.position.y
+            
+            let bulletSize = bullet.texture?.size()
+            let xSize = (bulletSize?.width)! * bullet.xScale
+            let ySize = (bulletSize?.height)! * bullet.yScale
+            bullet.physicsBody = SKPhysicsBody(texture: bullet.texture!, size: CGSize(width: xSize, height: ySize))
+            bullet.physicsBody?.isDynamic = true
+            bullet.physicsBody?.allowsRotation = true
+            bullet.physicsBody?.affectedByGravity = true
+            bullet.physicsBody?.categoryBitMask = PhysicsCategory.EnemyBullet
+            bullet.physicsBody?.contactTestBitMask = PhysicsCategory.Player
+            
+            scene.addChild(bullet)
+            
+            let moveBulletAction = SKAction.move(to: CGPoint(x:location.x, y:self.position.y), duration: 1.0)
+            let removeBulletAction = SKAction.removeFromParent()
+            
+            bullet.run(SKAction.sequence([moveBulletAction, removeBulletAction]))
+            let waitToEnableFire = SKAction.wait(forDuration: 0.5)
+            run(waitToEnableFire, completion: {
+                self.canFire = true
+            })
+            
+            print("shoot bullet")
+        }
+    }
+    
+    func attack(scene: SKScene, playerPos: CGPoint) {
+        fireBullet(scene: scene, location: playerPos)
     }
     
     func followPlayer(scene: SKScene, playerPos: CGPoint) {
@@ -68,13 +96,13 @@ class Enemy: Entity {
         let distanceTotal = sqrt(distanceX*distanceX + distanceY*distanceY)
         
         if(distanceTotal < attackDistance) {
-            if(!attacking) {
+            //if(!attacking) {
                 self.removeAction(forKey: "idling")
                 print("attack")
-                attack()
+                attack(scene: scene, playerPos: playerPos)
                 attacking = true
                 idling = false
-            }
+            //}
         } else if(distanceTotal < agroDistance && distanceTotal > attackDistance){
             getCloser(scene: scene, playerPos: playerPos)
         } else if(distanceTotal >= agroDistance) {

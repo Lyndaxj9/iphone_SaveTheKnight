@@ -50,11 +50,18 @@ class Entity: SKSpriteNode {
             self.position.x = xPosition
         } else if(abs(self.position.x - xPosition) >= walkingSpeed) {
             if(self.position.x > xPosition){
+                if(self.xScale > 0) {
+                    self.xScale *= -1
+                }
+                //walking left
                 self.position.x -= walkingSpeed
                 entityLeft = true
                 entityRight = false
                 entityMovement = true
             } else if(self.position.x < xPosition){
+                if(self.xScale < 0) {
+                    self.xScale *= -1
+                }
                 self.position.x += walkingSpeed
                 entityRight = true
                 entityLeft = false
