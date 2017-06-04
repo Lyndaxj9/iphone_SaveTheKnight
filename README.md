@@ -1,6 +1,4 @@
-Omowumi L. Ademola
-
-CS441 Mobile Game Development Program08
+iPhone Game: Save the Knight
 
 * Move by tapping on the screen
 * Double tap to jump
