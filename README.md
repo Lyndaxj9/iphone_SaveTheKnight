@@ -1,9 +1,20 @@
-iPhone Game: Save the Knight
+# Save the Knight (iPhone Game)
 
-* Move by tapping on the screen
+A game created using Swift and SpriteKit.
+
+## Objective
+
+Save the Knight at the end of the level while avoiding the zombies.  Collect crates to increase your score and gain health.  Jump on zombies to regain some health.
+
+## Controls
+
+* Move horizontally by tapping the side of the screen you want to head in
 * Double tap to jump
-* Kill enemies by jumping on them to gain health
-* Collect crates to increase your score and gain health
-* Avoid enemies bones attack
-* Save the knight to win
-* Restart app to play again
+
+## Images
+
+![start screen](http://i.imgur.com/wGuxXDi.png "Start Screen")
+
+## Resources
+
+* sprites and tiles from www.kenney.nl
