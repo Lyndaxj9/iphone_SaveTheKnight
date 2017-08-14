@@ -13,8 +13,10 @@ Save the Knight at the end of the level while avoiding the zombies.  Collect cra
 
 ## Images
 
-![start screen](http://i.imgur.com/wGuxXDi.png "Start Screen")
+![jump](http://i.imgur.com/OT33oUn.png "Jump")
+![enemy attack](http://i.imgur.com/TL1v4xa.png "Enemy Attack")
+![you win](http://i.imgur.com/PcDJQJT.png "You Win")
 
 ## Resources
 
-* sprites and tiles from www.kenney.nl
+* sprites and gui from http://www.gameart2d.com/
